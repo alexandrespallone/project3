@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Merge Sort versus Quick Sort - The Context And Scenarios When Their Utilization Is Beneficial</title>
+  <style>
+    body 
+    {
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    button 
+    {
+      margin-top: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    #array-table 
+    {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 750px;
+      overflow-y:scroll; 
+      height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      word-break: break-all;
+      word-wrap: break-word;
+      border: 5px solid black;
+    }
+
+    #table-body 
+    {
+      max-height: calc(500px - 48px);
+      overflow: scroll;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    #table-title
+    {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    #array 
+    {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    #timeQuick, #timeMerge, #analysis
+    {
+      margin-top: 50px;
+    }
+  </style>
+	</head>
+	<body>
+    <!--Title and buttons-->
+    <h1> Merge Sort versus Quick Sort - The Context And Scenarios When Their Utilization Is Beneficial</h1>
+    <div>
+      <!--Buttons-->
+      <button id="merge-sort-button">Merge Sort</button>
+      <button id="quick-sort-button">Quick Sort</button>
+      <button id="generate-button">Generate New Data</button>
+    </div>
+    <!--Text displaying how long quick sort and merge sort took-->
+    <div id="timeQuick"></div>
+    <div id="timeMerge"></div>
+    <div id="analysis"></div>
+    <!--Table displaying randomly generated data-->
+    <table id="array-table">
+      <thead>
+        <tr>
+          <th id="table-title">Randomly generated data (pre-sort):</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr>
+          <td id="array">
+            <!-- This is where my randomly generated array of integers spanning between  -->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+</body>
+
+<!---JavaScript needed to update DOM and perform the merge and quick sort operations-->
+<script>
+//Elements on screen:
+let arrayContainer = document.getElementById("array-table");
+let arrayEl = document.getElementById("array");
+let tableTitle = document.getElementById("table-title");
+let timeQuick = document.getElementById("timeQuick");
+let timeMerge = document.getElementById("timeMerge");
+let analysis =  document.getElementById("analysis");
+let baseMargin = 0; //Margin in between elements which increases as you do more sorts and resets when you generate mnew data
+let quickSortTime = -100;
+let mergeSortTime = -100;
+let hasMergeSort = false; //Boolean condition telling us whether we have sorted the array or not 
+let hasQuickSort = false; //Boolean condition telling us whether we have sorted the array or not 
+
+let numbersGenerated = 0; //How large our array is 
+function generateRandomArray() 
+{
+  let randomArr = [];
+  numbersGenerated = Math.floor(Math.random() * 1000000) + 100000; //Random generation of size of container
+  for (let i = 0; i < numbersGenerated; i++) 
+  {
+    randomArr.push(Math.floor(Math.random() * (1000000 - 100000) - 100000)); //Choosing random values for array
+  }
+  return randomArr;
+}
+
+//Time measuring function
+function measureTime(func) 
+{
+  let startTime = new Date().getTime();
+  func();
+  let endTime = new Date().getTime();
+  return endTime - startTime;
+}
+
+function mergeSort(arr) 
+{
+  if (arr.length <= 1) 
+  {
+    return arr;
+  }
+
+  let middle = Math.floor(arr.length / 2);
+  let left = arr.slice(0, middle);
+  let right = arr.slice(middle);
+
+  return merge(mergeSort(left), mergeSort(right));
+}
+
+function merge(left, right) 
+{
+  let leftIndex = 0;
+  let rightIndex = 0;
+  let result = [];
+
+  while (leftIndex < left.length && rightIndex < right.length) 
+  {
+    if (left[leftIndex] < right[rightIndex])
+    {
+      result.push(left[leftIndex]);
+      leftIndex++;
+    } else {
+      result.push(right[rightIndex]);
+      rightIndex++;
+    }
+  }
+
+  return result.concat(left.slice(leftIndex)).concat(right.slice(rightIndex));
+}
+
+// Function to perform quick sort on an array
+function quickSort(arr) 
+{
+  if (arr.length <= 1) 
+  {
+    return arr;
+  }  
+  
+  let leftArr = [];
+  let rightArr = [];
+  let pivot = arr[arr.length - 1];
+
+  for (let i = 0; i < arr.length - 1; i++) 
+  {
+    if (arr[i] < pivot) 
+    {
+      leftArr.push(arr[i]);
+    } else 
+    {
+      rightArr.push(arr[i]);
+    }
+  }
+
+  return quickSort(leftArr).concat(pivot, quickSort(rightArr));
+}
+
+let testArr = generateRandomArray();
+
+arrayEl.innerHTML = testArr.join(", "); //Fill in table with values
+arrayContainer.style.display = "block"; //Sets view state
+  
+let generateButton = document.getElementById("generate-button");
+function updateArrayElement(arr) 
+{
+  arrayEl.textContent = arr.join(", ");
+}
+
+//Delete all data off of screen as a reset button more or less
+function generateNewData() 
+{
+  testArr = generateRandomArray();  // Generate new random array
+  timeQuick.textContent = "";
+  timeMerge.textContent = "";
+  analysis.textContent = "";
+  baseMargin = 0;
+  arrayContainer.style.marginTop = baseMargin + "px";
+  quickSortTime = -100;
+  mergeSortTime = -100;
+  hasMergeSort = false;
+  hasQuickSort = false; 
+  updateArrayElement(testArr);
+}
+generateButton.addEventListener("click", generateNewData); //Add this action to button
+
+let quickSortButton = document.getElementById("quick-sort-button");
+function quickSortArray() 
+{
+  quickSortTime = measureTime(() => quickSort(testArr)); //Find out time it took
+  hasQuickSort = true; //Tell the browser we have sorted
+  timeQuick.textContent = "Quick sort completed in " + quickSortTime + " milliseconds."; //Set text
+
+  //Margin stuff regarding spacing between buttons and table
+  if(baseMargin == 0)
+  {
+    baseMargin += 100;
+    arrayContainer.style.marginTop = baseMargin + "px";
+  }else if(baseMargin != 150  && hasMergeSort)
+  {
+    baseMargin += 50;
+    arrayContainer.style.marginTop = baseMargin + "px";
+  }
+ 
+  //Display results according to whether quick sort was faster, the same, or less than merge sort
+  if(baseMargin == 150 && hasMergeSort && hasQuickSort)
+  {
+    if(quickSortTime < mergeSortTime)
+    {
+      analysis.textContent = "Over " + numbersGenerated + " randomly generated integers spanning from -100000 to 1000000, quick sort was " + ((1 - (quickSortTime/mergeSortTime)) * 100).toFixed(2) + "% faster than merge sort and saved " + (mergeSortTime-quickSortTime) + " milliseconds overall."
+    }else if(quickSortTime == mergeSortTime)
+    {
+      analysis.textContent = "Over " + numbersGenerated + " randomly generated integers spanning from -100000 to 1000000, quick sort was equally as fast as merge sort.";
+    }else if(quickSortTime > mergeSortTime)
+    {
+      analysis.textContent = "Over " + numbersGenerated + " randomly generated integers spanning from -100000 to 1000000, merge sort was " + ((1 - (mergeSortTime/quickSortTime)) * 100).toFixed(2) + "% faster than quick sort and saved " + (quickSortTime-mergeSortTime) + " milliseconds overall.";
+    }
+  }
+
+  // Update table
+  tableTitle.textContent = "Randomly generated data (post-sort):";
+  updateArrayElement(quickSort(testArr));
+}
+quickSortButton.addEventListener("click", quickSortArray); //Add function to button
+
+let mergeSortButton = document.getElementById("merge-sort-button");
+function mergeSortArray() 
+{
+   mergeSortTime = measureTime(() => mergeSort(testArr)); //Take time to merge sort 
+   hasMergeSort = true; //Tell browser we have done the merge sort operation
+  timeMerge.textContent = "Merge sort completed in " + mergeSortTime + " milliseconds."; //Update gui
+
+  //Display results according to whether quick sort was faster, the same, or less than merge sort
+  if(baseMargin == 0)
+  {
+    baseMargin += 100;
+    arrayContainer.style.marginTop = baseMargin + "px";
+  }else if(baseMargin != 150 && hasQuickSort)
+  {
+    baseMargin += 50;
+    arrayContainer.style.marginTop = baseMargin + "px";
+  }
+
+  //Display results according to whether quick sort was faster, the same, or less than merge sort
+  if(baseMargin == 150 && hasMergeSort && hasQuickSort)
+  {
+    if(quickSortTime < mergeSortTime)
+    {
+      analysis.textContent = "Over " + numbersGenerated + " randomly generated integers spanning from -100000 to 1000000, quick sort was " + ((1 - (quickSortTime/mergeSortTime)) * 100).toFixed(2) + "% faster than merge sort and saved " + (mergeSortTime-quickSortTime) + " milliseconds overall."
+    }else if(quickSortTime == mergeSortTime)
+    {
+      analysis.textContent = "Over " + numbersGenerated + " randomly generated integers spanning from -100000 to 1000000, quick sort was equally as fast as merge sort.";
+    }else if(quickSortTime > mergeSortTime)
+    {
+      analysis.textContent = "Over " + numbersGenerated + " randomly generated integers spanning from -100000 to 1000000, merge sort was " + ((1 - (mergeSortTime/quickSortTime)) * 100).toFixed(2) + "% faster than quick sort and saved " + (quickSortTime-mergeSortTime) + " milliseconds overall.";
+    }
+  }
+
+  // Update table
+  tableTitle.textContent = "Randomly generated data (post-sort):";
+  updateArrayElement(mergeSort(testArr));
+}
+mergeSortButton.addEventListener("click", mergeSortArray); //Add function to button
+</script>
+</body>
